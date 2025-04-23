@@ -1,4 +1,3 @@
-
 import { User, Tweet, Prediction, LeaderboardEntry } from './types';
 
 // Mock database storage
@@ -10,13 +9,13 @@ const storage = {
 
 // Initialize with some mock data
 const initializeData = () => {
-  // Mock tweets
+  // Mock tweets - now with proper White House tweets
   const mockTweets: Tweet[] = [
     {
       id: '1',
       tweetId: '1234567890',
       content: 'The White House is committed to strengthening the economy and creating jobs for all Americans.',
-      publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+      publishedAt: new Date(Date.now() - 48 * 60 * 60 * 1000), // 2 days ago
       spBefore: 4200.50,
       spAfter: 4220.75,
       outcome: 'bull',
@@ -25,27 +24,28 @@ const initializeData = () => {
       id: '2',
       tweetId: '0987654321',
       content: 'Today we are announcing new regulations on the financial sector to protect consumers.',
-      publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      publishedAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
       spBefore: 4220.75,
       spAfter: 4210.25,
       outcome: 'bear',
     },
+    // Only one future tweet that needs prediction at a time
     {
       id: '3',
-      tweetId: '1357908642',
-      content: 'The President will be meeting with tech industry leaders next week.',
-      publishedAt: new Date(), // Current time
-      spBefore: 4210.25,
+      tweetId: 'pending',
+      content: null, // Content is unknown until tweet is posted
+      publishedAt: null, // Will be set when tweet is posted
+      spBefore: 4210.25, // Current S&P value
       spAfter: null,
       outcome: null,
     },
   ];
 
-  // Mock users
+  // Mock users with Twitter handles
   const mockUsers: User[] = [
     {
       id: '1',
-      twitterHandle: '@investor123',
+      twitterHandle: '@WhiteHouse',
       xp: 250,
       currentStreak: 3,
       totalPredictions: 10,
@@ -54,7 +54,7 @@ const initializeData = () => {
     },
     {
       id: '2',
-      twitterHandle: '@marketwhiz',
+      twitterHandle: '@POTUS',
       xp: 320,
       currentStreak: 0,
       totalPredictions: 12,
@@ -63,7 +63,7 @@ const initializeData = () => {
     },
     {
       id: '3',
-      twitterHandle: '@traderpro',
+      twitterHandle: '@VP',
       xp: 180,
       currentStreak: 2,
       totalPredictions: 8,
@@ -80,7 +80,7 @@ const initializeData = () => {
       tweetId: '1',
       guess: 'bull',
       correct: true,
-      createdAt: new Date(Date.now() - 23 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - 47 * 60 * 60 * 1000),
     },
     {
       id: '2',
@@ -88,7 +88,7 @@ const initializeData = () => {
       tweetId: '2',
       guess: 'bull',
       correct: false,
-      createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - 23 * 60 * 60 * 1000),
     },
     {
       id: '3',
@@ -96,7 +96,7 @@ const initializeData = () => {
       tweetId: '1',
       guess: 'bear',
       correct: false,
-      createdAt: new Date(Date.now() - 23 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - 47 * 60 * 60 * 1000),
     },
     {
       id: '4',
@@ -104,16 +104,9 @@ const initializeData = () => {
       tweetId: '2',
       guess: 'bear',
       correct: true,
-      createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - 23 * 60 * 60 * 1000),
     },
-    {
-      id: '5',
-      userId: '3',
-      tweetId: '3',
-      guess: 'bull',
-      correct: null,
-      createdAt: new Date(Date.now() - 30 * 60 * 1000),
-    },
+    // No predictions for the pending tweet yet
   ];
 
   storage.tweets = mockTweets;
@@ -261,9 +254,72 @@ export const getLeaderboard = (): LeaderboardEntry[] => {
     .sort((a, b) => b.xp - a.xp);
 };
 
-// For demo purposes - simulate a logged in user
-export let currentUser: User | null = storage.users[0];
+/**
+ * Gets the next tweet that needs prediction (has no content yet)
+ */
+export const getPendingPredictionTweet = (): Tweet | undefined => {
+  return storage.tweets.find(tweet => tweet.content === null);
+};
 
+/**
+ * Gets the most recent tweet that has been resolved
+ */
+export const getMostRecentResolvedTweet = (): Tweet | undefined => {
+  return [...storage.tweets]
+    .filter(tweet => tweet.outcome !== null)
+    .sort((a, b) => 
+      (b.publishedAt?.getTime() || 0) - (a.publishedAt?.getTime() || 0)
+    )[0];
+};
+
+/**
+ * In a real app, this would be populated by scraping @WhiteHouse tweets
+ * and recording the S&P 500 value 10 minutes after the tweet
+ */
+export const resolveCurrentPendingTweet = (content: string, spAfter: number): Tweet | undefined => {
+  const pendingTweet = getPendingPredictionTweet();
+  if (!pendingTweet) return undefined;
+  
+  const tweetIndex = storage.tweets.findIndex(tweet => tweet.id === pendingTweet.id);
+  if (tweetIndex === -1) return undefined;
+  
+  const now = new Date();
+  const outcome: 'bull' | 'bear' = spAfter > pendingTweet.spBefore ? 'bull' : 'bear';
+  
+  storage.tweets[tweetIndex] = { 
+    ...pendingTweet, 
+    content,
+    publishedAt: now,
+    spAfter, 
+    outcome 
+  };
+  
+  // Create a new pending tweet for future predictions
+  const newPendingTweet: Tweet = {
+    id: `tweet_${Date.now()}`,
+    tweetId: 'pending',
+    content: null,
+    publishedAt: null,
+    spBefore: spAfter, // Start from current S&P value
+    spAfter: null,
+    outcome: null,
+  };
+  
+  storage.tweets.push(newPendingTweet);
+  
+  // Resolve all predictions for this tweet
+  resolvePredictions(pendingTweet.id);
+  
+  return storage.tweets[tweetIndex];
+};
+
+// For demo purposes - simulate a logged in user
+export let currentUser: User | null = null; // Start with no user logged in
+
+/**
+ * Login function - simulates Twitter OAuth
+ * In a real app, this would authenticate with Twitter
+ */
 export const loginUser = (id: string): User | null => {
   const user = getUserById(id);
   if (user) {

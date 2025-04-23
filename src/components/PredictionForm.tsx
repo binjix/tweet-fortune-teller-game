@@ -8,11 +8,11 @@ import { useNavigate } from "react-router-dom";
 import { Tweet } from "@/lib/types";
 
 interface PredictionFormProps {
-  tweet: Tweet;
+  pendingTweet: Tweet;
   userId: string;
 }
 
-export function PredictionForm({ tweet, userId }: PredictionFormProps) {
+export function PredictionForm({ pendingTweet, userId }: PredictionFormProps) {
   const [selectedGuess, setSelectedGuess] = useState<'bull' | 'bear' | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -31,13 +31,13 @@ export function PredictionForm({ tweet, userId }: PredictionFormProps) {
     try {
       await savePrediction.mutateAsync({
         userId,
-        tweetId: tweet.id,
+        tweetId: pendingTweet.id,
         guess: selectedGuess,
       });
 
       toast({
         title: "Prediction submitted!",
-        description: `You predicted the market will go ${selectedGuess === 'bull' ? 'up' : 'down'}.`,
+        description: `You predicted the market will go ${selectedGuess === 'bull' ? 'up' : 'down'} after the next White House tweet.`,
       });
 
       // Navigate to results page
@@ -56,15 +56,14 @@ export function PredictionForm({ tweet, userId }: PredictionFormProps) {
       <CardHeader>
         <CardTitle className="text-center text-2xl">Make Your Prediction</CardTitle>
         <CardDescription className="text-center">
-          Will this White House tweet make the market go up or down?
+          Will the next White House tweet make the market go up or down?
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="rounded-lg bg-muted p-4">
-          <p className="italic text-muted-foreground text-sm mb-2">White House Tweet:</p>
-          <p className="font-medium">{tweet.content}</p>
-          <p className="text-xs text-muted-foreground mt-2">
-            Posted on {new Date(tweet.publishedAt).toLocaleString()}
+          <p className="font-medium text-center">Predict how the S&P 500 will react to the next @WhiteHouse tweet</p>
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            The result will be determined by the S&P 500 movement 10 minutes after the tweet is posted
           </p>
         </div>
 
@@ -92,6 +91,10 @@ export function PredictionForm({ tweet, userId }: PredictionFormProps) {
             <span className="text-red-600 font-semibold">Bear</span>
             <span className="text-xs text-muted-foreground">Market Down</span>
           </Button>
+        </div>
+
+        <div className="text-sm text-center text-muted-foreground bg-blue-50 p-3 rounded-md">
+          <p>Current S&P 500: {pendingTweet.spBefore.toFixed(2)}</p>
         </div>
       </CardContent>
       <CardFooter>

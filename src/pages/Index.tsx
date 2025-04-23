@@ -1,30 +1,31 @@
+
 import { Layout } from "@/components/Layout";
 import { WelcomeCard } from "@/components/WelcomeCard";
 import { PredictionForm } from "@/components/PredictionForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentTweet } from "@/hooks/useCurrentTweet";
 import { getUserPredictions } from "@/lib/mockDatabase";
-import { redirect, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const { user, isLoading: authLoading } = useAuth();
-  const { data: currentTweet, isLoading: tweetLoading, error } = useCurrentTweet();
+  const { data: pendingTweet, isLoading: tweetLoading, error } = useCurrentTweet();
   const navigate = useNavigate();
 
-  // Check if user already has a prediction for the current tweet
-  const hasExistingPrediction = user && currentTweet && 
+  // Check if user already has a prediction for the pending tweet
+  const hasExistingPrediction = user && pendingTweet && 
     getUserPredictions(user.id).some(
-      p => p.tweetId === currentTweet.id
+      p => p.tweetId === pendingTweet.id
     );
 
   // If user has already made a prediction, redirect to results
   useEffect(() => {
-    if (user && currentTweet && hasExistingPrediction) {
+    if (user && pendingTweet && hasExistingPrediction) {
       navigate("/results");
     }
-  }, [user, currentTweet, hasExistingPrediction, navigate]);
+  }, [user, pendingTweet, hasExistingPrediction, navigate]);
 
   return (
     <Layout>
@@ -49,12 +50,12 @@ const Index = () => {
         ) : !user ? (
           // Show welcome card for unauthenticated users
           <WelcomeCard />
-        ) : !currentTweet ? (
+        ) : !pendingTweet ? (
           // No tweet available for prediction
           <div className="text-center max-w-md mx-auto bg-white p-8 rounded-lg shadow-sm">
             <h2 className="text-2xl font-bold mb-4">No Predictions Available</h2>
             <p className="mb-6 text-muted-foreground">
-              There are no White House tweets available for prediction at the moment.
+              We're currently waiting for a new tweet from the White House.
               Please check back soon!
             </p>
             <div className="flex justify-center gap-4">
@@ -73,7 +74,7 @@ const Index = () => {
           </div>
         ) : (
           // Show prediction form for authenticated users with available tweet
-          <PredictionForm tweet={currentTweet} userId={user.id} />
+          <PredictionForm pendingTweet={pendingTweet} userId={user.id} />
         )}
         
         {/* Stats Section */}
@@ -84,7 +85,7 @@ const Index = () => {
               <div className="mx-auto mb-4 bg-blue-100 text-blue-800 w-12 h-12 flex items-center justify-center rounded-full text-xl font-bold">1</div>
               <h3 className="font-semibold mb-2">Make a Prediction</h3>
               <p className="text-sm text-muted-foreground">
-                Choose if the next White House tweet will make the S&P 500 go up (bull) or down (bear).
+                Predict if the next @WhiteHouse tweet will make the S&P 500 go up (bull) or down (bear).
               </p>
             </div>
             
@@ -92,7 +93,7 @@ const Index = () => {
               <div className="mx-auto mb-4 bg-blue-100 text-blue-800 w-12 h-12 flex items-center justify-center rounded-full text-xl font-bold">2</div>
               <h3 className="font-semibold mb-2">Wait for Results</h3>
               <p className="text-sm text-muted-foreground">
-                We track the S&P 500 before and after White House tweets to determine market impact.
+                We measure the S&P 500 10 minutes after a White House tweet to determine market impact.
               </p>
             </div>
             

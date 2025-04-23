@@ -1,73 +1,84 @@
-# Welcome to your Lovable project
 
-## Project info
+# Bull or Bear Prediction Game
 
-**URL**: https://lovable.dev/projects/50b854da-4d33-4993-a80d-156ce3df9a8e
+A web application that allows users to predict how the next White House tweet will impact the stock market.
 
-## How can I edit this code?
+## Project Overview
 
-There are several ways of editing your application.
+"Bull or Bear" is a prediction game where players guess whether the next official White House tweet will make the stock market go up (bullish) or down (bearish). Predictions are tracked and users earn XP for correct guesses.
 
-**Use Lovable**
+## Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/50b854da-4d33-4993-a80d-156ce3df9a8e) and start prompting.
+- **Authentication**: Login with Twitter (mocked for demo)
+- **Prediction Flow**: Make binary choices (bull or bear) about market impact of tweets
+- **User Profiles**: View your prediction history, stats, and current streak
+- **Leaderboard**: Compete with other players based on prediction accuracy and XP
+- **Streak System**: Build consecutive correct predictions for bonus XP
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Technical Implementation
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Frontend**: React with TypeScript and Tailwind CSS
+- **UI Components**: shadcn/ui for a polished interface
+- **State Management**: React Query for server state
+- **Routing**: React Router for navigation
+- **Mock Database**: Simulated data layer (could be replaced with actual database)
 
-## How can I deploy this project?
+## Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/50b854da-4d33-4993-a80d-156ce3df9a8e) and click on Share -> Publish.
+- `/src/components`: UI components
+- `/src/contexts`: React context providers (Auth)
+- `/src/hooks`: Custom React hooks
+- `/src/lib`: Utilities and database interface
+- `/src/pages`: Application pages
 
-## Can I connect a custom domain to my Lovable project?
+## Data Model
 
-Yes, you can!
+The application uses three main data types:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. **Users**: Profile information, XP, and prediction stats
+2. **Tweets**: White House tweets with S&P 500 measurements
+3. **Predictions**: User predictions linked to tweets
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## Getting Started
+
+### Prerequisites
+
+- Node.js
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```
+   npm install
+   ```
+3. Start the development server:
+   ```
+   npm run dev
+   ```
+
+## Mock Data
+
+For demonstration purposes, this project uses mock data instead of connecting to external APIs. In a production environment, you would:
+
+1. Integrate with Twitter API to fetch White House tweets
+2. Connect to financial data provider for S&P 500 information
+3. Use a real database instead of in-memory storage
+4. Set up authentication with Twitter OAuth
+5. Create server-side functions for processing predictions
+
+## Automation
+
+In a production environment, GitHub Actions would be configured to:
+
+1. Fetch new White House tweets periodically
+2. Measure market impact after a set time period
+3. Resolve user predictions and award XP
+4. Update leaderboards
+
+## License
+
+[MIT](LICENSE)

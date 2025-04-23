@@ -15,6 +15,7 @@ const Results = () => {
   const [latestResolvedTweet, setLatestResolvedTweet] = useState<Tweet | undefined>();
   const [userPrediction, setUserPrediction] = useState<Prediction | undefined>();
   const [isLoading, setIsLoading] = useState(true);
+  const [userStreak, setUserStreak] = useState(0);
   
   // If no user is logged in, redirect to the home page
   useEffect(() => {
@@ -38,6 +39,10 @@ const Results = () => {
       // Get user's predictions
       if (user) {
         const predictions = getUserPredictions(user.id);
+        
+        // Calculate streak (we'll use this from mock data since we don't have it in Supabase user)
+        const streak = predictions.filter(p => p.correct === true).length || 0;
+        setUserStreak(streak);
         
         // First check for pending prediction
         if (pending) {
@@ -169,7 +174,7 @@ const Results = () => {
                 
                 {isCorrect && (
                   <p className="mt-2 font-semibold text-green-600">
-                    +{user.currentStreak * 10} XP earned!
+                    +{userStreak * 10} XP earned!
                   </p>
                 )}
               </div>

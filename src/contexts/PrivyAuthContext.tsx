@@ -26,7 +26,7 @@ export function PrivyAuthProvider({ children }: { children: ReactNode }) {
       value={{
         user: authenticated ? user : null,
         isLoading: !ready,
-        login: async () => login("twitter"), // Fixed: Using the correct signature
+        login: async () => login({ provider: "twitter" }),
         logout,
       }}
     >
@@ -38,3 +38,4 @@ export function PrivyAuthProvider({ children }: { children: ReactNode }) {
 export function usePrivyAuth() {
   return useContext(PrivyAuthContext);
 }
+

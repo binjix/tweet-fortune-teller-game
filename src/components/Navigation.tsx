@@ -1,11 +1,10 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
 import { Twitter, LogIn, User, TrendingUp } from "lucide-react";
+import { usePrivyAuth } from "@/contexts/PrivyAuthContext"; // update import
 
 export function Navigation() {
-  const { user, isLoading, login, logout } = useAuth();
+  const { user, isLoading, login, logout } = usePrivyAuth(); // update hooks
 
   return (
     <header className="border-b shadow-sm bg-white">

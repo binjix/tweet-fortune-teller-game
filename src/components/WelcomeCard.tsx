@@ -1,10 +1,11 @@
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, ArrowDown, Twitter } from "lucide-react";
-import { usePrivyAuth } from "@/contexts/PrivyAuthContext"; // update import
+import { usePrivyAuth } from "@/contexts/PrivyAuthContext";
 
 export function WelcomeCard() {
-  const { login, isLoading } = usePrivyAuth(); // update hooks
+  const { login, isLoading } = usePrivyAuth();
 
   return (
     <Card className="w-full max-w-md border-2 border-primary/20">

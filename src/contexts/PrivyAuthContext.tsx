@@ -36,3 +36,6 @@ export function DemoAuthProvider({ children }: { children: ReactNode }) {
 export function useDemoAuth() {
   return useContext(DemoAuthContext);
 }
+
+// Export the useDemoAuth function as usePrivyAuth for backward compatibility
+export const usePrivyAuth = useDemoAuth;

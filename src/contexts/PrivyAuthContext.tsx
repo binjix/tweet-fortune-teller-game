@@ -1,6 +1,6 @@
 
 import { ReactNode, createContext, useContext } from "react";
-import { usePrivy, PrivyProvider } from "@privy-io/react-auth";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface PrivyAuthContextType {
   user: any | null;
@@ -26,7 +26,7 @@ export function PrivyAuthProvider({ children }: { children: ReactNode }) {
       value={{
         user: authenticated ? user : null,
         isLoading: !ready,
-        login: async () => login({ provider: "twitter" }),
+        login: async () => login("twitter"),
         logout,
       }}
     >

@@ -1,10 +1,17 @@
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, AuthContextType } from '@/lib/types';
-import { getCurrentUser, loginUser, logoutUser } from '@/lib/mockDatabase';
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-// Create the auth context with default values
+// Context type
+interface AuthContextType {
+  user: User | null;
+  isLoading: boolean;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
+}
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
@@ -16,94 +23,62 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-/**
- * AuthProvider component that wraps the application and provides authentication context
- * In a production app, this would use Twitter OAuth via Supabase or a similar auth provider
- */
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize auth state on component mount
+  // Listen for auth state changes and initialize auth state
   useEffect(() => {
-    const initAuth = async () => {
-      setIsLoading(true);
-      try {
-        // In a real app, this would check for an existing Twitter session
-        const currentUser = getCurrentUser();
-        setUser(currentUser);
-      } catch (error) {
-        console.error('Failed to initialize auth:', error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // Set up the auth state change listener first!
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
-    initAuth();
+    // Then fetch the current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  /**
-   * Login function - in a real app, this would authenticate with Twitter
-   * For now, we simulate login with the first user in our mock database
-   */
-  const login = async (): Promise<void> => {
+  // Twitter login using Supabase provider
+  const login = async () => {
     setIsLoading(true);
-    try {
-      // Simulate Twitter OAuth (would redirect to Twitter in real app)
-      // For now, just use first mock user
-      const loggedInUser = loginUser('1');
-      
-      if (loggedInUser) {
-        setUser(loggedInUser);
-        toast({
-          title: "Successfully logged in",
-          description: `Welcome ${loggedInUser.twitterHandle}!`,
-        });
-      } else {
-        toast({
-          title: "Login failed",
-          description: "Could not authenticate with Twitter",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Login failed:', error);
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "twitter" });
+    if (error) {
       toast({
         title: "Login failed",
-        description: "Could not authenticate with Twitter",
+        description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
-  /**
-   * Logout function to clear user session
-   */
-  const logout = async (): Promise<void> => {
+  // Logout using Supabase
+  const logout = async () => {
     setIsLoading(true);
-    try {
-      logoutUser();
-      setUser(null);
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
       toast({
         title: "Logged out",
         description: "You have been successfully logged out",
       });
-    } catch (error) {
-      console.error('Logout failed:', error);
+    } else {
       toast({
         title: "Logout failed",
-        description: "Could not log out",
+        description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+    setUser(null);
+    setIsLoading(false);
   };
 
-  // Provide the auth context to children components
   return (
     <AuthContext.Provider value={{ user, isLoading, login, logout }}>
       {children}
@@ -111,13 +86,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   );
 };
 
-/**
- * Custom hook to use the auth context
- */
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
+

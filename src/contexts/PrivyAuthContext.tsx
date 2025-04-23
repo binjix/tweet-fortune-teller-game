@@ -1,40 +1,38 @@
 
+// Removed all logic for Privy Auth and replaced with a placeholder
 import { ReactNode, createContext, useContext } from "react";
-import { usePrivy } from "@privy-io/react-auth";
 
-interface PrivyAuthContextType {
-  user: any | null;
-  isLoading: boolean;
+// Minimal placeholder, not active
+interface DemoAuthContextType {
+  user: null;
+  isLoading: false;
   login: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
-const PrivyAuthContext = createContext<PrivyAuthContextType>({
+const DemoAuthContext = createContext<DemoAuthContextType>({
   user: null,
-  isLoading: true,
+  isLoading: false,
   login: async () => {},
   logout: async () => {},
 });
 
-// Make sure to wrap your App in <PrivyProvider> in src/main.tsx
-
-export function PrivyAuthProvider({ children }: { children: ReactNode }) {
-  const { ready, authenticated, login, logout, user } = usePrivy();
-
+export function DemoAuthProvider({ children }: { children: ReactNode }) {
+  // This just passes children through with no real authentication
   return (
-    <PrivyAuthContext.Provider
+    <DemoAuthContext.Provider
       value={{
-        user: authenticated ? user : null,
-        isLoading: !ready,
-        login: async () => login("twitter"), // Use the string parameter directly
-        logout,
+        user: null,
+        isLoading: false,
+        login: async () => {},
+        logout: async () => {},
       }}
     >
       {children}
-    </PrivyAuthContext.Provider>
+    </DemoAuthContext.Provider>
   );
 }
 
-export function usePrivyAuth() {
-  return useContext(PrivyAuthContext);
+export function useDemoAuth() {
+  return useContext(DemoAuthContext);
 }
